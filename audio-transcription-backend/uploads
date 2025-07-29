@@ -1,0 +1,3 @@
+The `uploads` directory is intended to be empty as it is used to temporarily store uploaded audio files. Therefore, the contents of the file `/audio-transcription-backend/audio-transcription-backend/uploads` will be as follows:
+
+# This directory is intentionally left blank.
