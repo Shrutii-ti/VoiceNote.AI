@@ -1,9 +1,10 @@
 const fs = require('fs');
 const path = require('path');
 const whisperService = require('../services/whisperService');
+const emotionAnalysisService = require('../services/emotionAnalysisService');
 
 /**
- * Transcribe audio file using OpenAI Whisper API
+ * Transcribe audio file using OpenAI Whisper API and analyze emotion/tone
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
@@ -24,6 +25,23 @@ const transcribeAudio = async (req, res) => {
 
         // Call Whisper service to transcribe audio
         const transcription = await whisperService.transcribeAudio(audioFilePath);
+        console.log(`📝 Transcription completed: "${transcription.text}"`);
+
+        // Analyze emotion and tone from the transcription
+        let emotionAnalysis = null;
+        try {
+            console.log(`🧠 Starting emotion analysis...`);
+            emotionAnalysis = await emotionAnalysisService.analyzeEmotionAndTone(transcription.text);
+            console.log(`✅ Emotion analysis completed: ${emotionAnalysis.emotion}, ${emotionAnalysis.tone}`);
+        } catch (emotionError) {
+            console.warn(`⚠️ Emotion analysis failed: ${emotionError.message}`);
+            // Continue without emotion analysis if it fails
+            emotionAnalysis = {
+                emotion: 'unknown',
+                tone: 'unknown',
+                reason: 'Emotion analysis was not available'
+            };
+        }
 
         // Clean up the uploaded file
         try {
@@ -33,16 +51,24 @@ const transcribeAudio = async (req, res) => {
             console.warn(`⚠️ Failed to clean up file ${audioFilePath}:`, cleanupError.message);
         }
 
-        // Return successful response
+        // Prepare response data
+        const responseData = {
+            transcription: transcription.text,
+            language: transcription.language,
+            duration: transcription.duration,
+            originalFilename: originalFilename,
+            emotion: emotionAnalysis.emotion,
+            tone: emotionAnalysis.tone,
+            emotionReason: emotionAnalysis.reason
+        };
+
+        console.log(`📤 Sending response with emotion analysis:`, responseData);
+
+        // Return successful response with transcription and emotion analysis
         res.status(200).json({
             success: true,
-            message: 'Audio transcribed successfully',
-            data: {
-                transcription: transcription.text,
-                language: transcription.language,
-                duration: transcription.duration,
-                originalFilename: originalFilename
-            }
+            message: 'Audio transcribed and analyzed successfully',
+            data: responseData
         });
 
     } catch (error) {

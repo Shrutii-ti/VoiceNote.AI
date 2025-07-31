@@ -1,10 +1,11 @@
 # Voice-to-Notes AI Backend
 
-A clean, well-structured Node.js + Express backend for a Voice-to-Notes AI application using OpenAI Whisper API for audio transcription.
+A clean, well-structured Node.js + Express backend for a Voice-to-Notes AI application using OpenAI Whisper API for audio transcription and GPT-4o mini for emotion/tone analysis.
 
 ## 🚀 Features
 
 - **Audio Transcription**: Convert audio files to text using OpenAI Whisper API
+- **Emotion & Tone Analysis**: Analyze transcribed text for emotion and tone using GPT-4o mini
 - **File Upload**: Secure file upload with validation and size limits
 - **Modular Architecture**: Clean separation of routes, controllers, and services
 - **Error Handling**: Comprehensive error handling and logging
@@ -25,7 +26,8 @@ A clean, well-structured Node.js + Express backend for a Voice-to-Notes AI appli
 ├── controllers/
 │   └── transcribeController.js # Business logic handlers
 ├── services/
-│   └── whisperService.js   # OpenAI Whisper API integration
+│   ├── whisperService.js   # OpenAI Whisper API integration
+│   └── emotionAnalysisService.js # GPT-4o mini emotion analysis
 └── utils/
     └── helpers.js          # Utility functions
 ```
@@ -85,11 +87,11 @@ GET /health
 ```
 Returns server status and uptime information.
 
-### Audio Transcription
+### Audio Transcription with Emotion Analysis
 ```
 POST /api/transcribe/audio
 ```
-Upload an audio file for transcription.
+Upload an audio file for transcription and emotion/tone analysis.
 
 **Request:**
 - Method: `POST`
@@ -100,12 +102,15 @@ Upload an audio file for transcription.
 ```json
 {
   "success": true,
-  "message": "Audio transcribed successfully",
+  "message": "Audio transcribed and analyzed successfully",
   "data": {
     "transcription": "The transcribed text...",
     "language": "en",
     "duration": 10.5,
-    "originalFilename": "audio.mp3"
+    "originalFilename": "audio.mp3",
+    "emotion": "excited",
+    "tone": "enthusiastic",
+    "emotionReason": "Uses positive language and exclamation marks indicating high energy"
   }
 }
 ```
@@ -118,7 +123,7 @@ You can test the API using tools like Postman or curl:
 # Test health endpoint
 curl http://localhost:3000/health
 
-# Test transcription endpoint
+# Test transcription with emotion analysis endpoint
 curl -X POST \
   -F "audio=@path/to/your/audio.mp3" \
   http://localhost:3000/api/transcribe/audio
@@ -146,8 +151,27 @@ The API provides detailed error responses for various scenarios:
 In development mode, the server logs:
 - HTTP requests (Morgan)
 - File processing status
-- API calls to OpenAI
+- API calls to OpenAI Whisper
+- Emotion analysis results
 - Error details
+
+## 🧠 Emotion & Tone Analysis
+
+The backend now includes intelligent emotion and tone analysis using GPT-4o mini:
+
+### Supported Emotions:
+- happy, sad, angry, fearful, surprised, neutral
+- excited, frustrated, anxious, calm, confused
+
+### Supported Tones:
+- serious, sarcastic, casual, excited, polite
+- aggressive, formal, friendly, nervous, confident
+
+### Analysis Features:
+- **Real-time Processing**: Analyzes transcription immediately
+- **Fallback Handling**: Continues if emotion analysis fails
+- **Detailed Reasoning**: Provides explanation for detected emotion/tone
+- **Multi-language Support**: Works with various languages including Urdu
 
 ## 🚀 Deployment
 
@@ -177,4 +201,5 @@ For issues and questions:
 1. Check the error logs
 2. Verify your OpenAI API key
 3. Ensure file format is supported
-4. Check file size limits 
+4. Check file size limits
+5. Verify emotion analysis is working 

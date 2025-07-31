@@ -3,6 +3,7 @@ const express = require('express');
 const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
+const mongoose = require('mongoose');
 
 // Import routes
 const transcribeRoutes = require('./routes/transcribeRoutes');
@@ -54,8 +55,19 @@ app.use('*', (req, res) => {
     });
 });
 
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log('✅ Connected to MongoDB');
+}).catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Voice-to-Notes AI Backend running on http://localhost:${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'production'}`);
     console.log(`📁 Uploads directory: ${uploadsDir}`);
-}); 
+});
